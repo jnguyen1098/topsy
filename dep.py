@@ -8,7 +8,7 @@ from typing import List
 
 
 def main(argv: List[str]) -> int:
-    """Parse call graph and generate dependency graph."""
+    """Parse call graph, then create `tsort` and GraphViz output."""
     if len(argv) != 3:
         print(f"Usage: {argv[0]} infile outfile", file=sys.stderr)
         return 1
