@@ -39,6 +39,7 @@ Generate topological sort for C/C++ source file
 Options
 -a,    output all symbols (external, static, typedef)
 -v,    verbose output (print intermediate representations)
+       and generate GraphViz dependency graph dot/gv file
 ```
 
 Note: `-v` does not imply `-a`. Arguments must come after the filename.
@@ -94,8 +95,6 @@ main()
 ```
 
 ## TODO
-
-- Graphviz export
 
 - Multiple file support
 

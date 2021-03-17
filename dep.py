@@ -21,6 +21,8 @@ def main(argv: List[str]) -> int:
 
     current_top = None
 
+    print("digraph G {");
+
     for line in infile:
         top_m = re.match(topgex, line)
         if top_m is not None:
@@ -29,7 +31,10 @@ def main(argv: List[str]) -> int:
             bot_m = re.match(nestgex, line)
             if bot_m is not None:
                 outfile.write(f"{current_top} {bot_m.group(1)}\n")
+                print(f'    "{current_top}" -> "{bot_m.group(1)}";')
 
+
+    print("}")
     return 0
 
 

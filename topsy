@@ -1,7 +1,20 @@
 #!/usr/bin/env bash
 
+# Dynamically take input from STDIN or args
+input=${1--}
+
 # Shift argument before parsing flags
 OPTIND=2
+
+# Temporary buffers
+call_graph=$(mktemp)
+dep_graph=$(mktemp)
+
+# By default, suppress GraphViz output
+graph_out=/dev/null
+
+# Ensure proper cleanup
+trap 'rm -f "$call_graph" "$dep_graph"; exit' 0 2 3 15
 
 # Parse verbosity flags
 while getopts ":av" opt; do
@@ -13,6 +26,7 @@ while getopts ":av" opt; do
         v)
             # Output intermediate steps
             verbose=true
+            graph_out=graph.gv
             ;;
         [?])
             # Print usage upon unknown
@@ -22,20 +36,11 @@ while getopts ":av" opt; do
             echo "Options"
             echo "-a,    output all symbols (external, static, typedef)"
             echo "-v,    verbose output (print intermediate representations)"
+            echo "       and generate GraphViz dependency graph dot/gv file"
             exit 1
             ;;
     esac
 done
-
-# Dynamically take input from STDIN or args
-input=${1--}
-
-# Temporary files
-call_graph=$(mktemp)
-dep_graph=$(mktemp)
-
-# Ensure proper cleanup
-trap 'rm -f "$call_graph" "$dep_graph"; exit' 0 2 3 15
 
 # Create the reverse call graph using cflow first.
 cflow -r $flag <(cat "$input") > "$call_graph" 2> /dev/null
@@ -47,8 +52,8 @@ if [ "$verbose" = true ]; then
     echo ""
 fi
 
-# Create dependency graph next
-./dep.py "$call_graph" "$dep_graph"
+# Create dependency graph
+./dep.py "$call_graph" "$dep_graph" 1> $graph_out
 
 # Print dependency graph if verbose
 if [ "$verbose" = true ]; then
