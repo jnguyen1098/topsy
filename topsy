@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+# Shift argument before parsing flags
+OPTIND=2
+
+# Parse verbosity flags
+while getopts ":av" opt; do
+    case $opt in
+        a)
+            # Track all symbols
+            flag='-ix'
+            ;;
+        v)
+            # Output intermediate steps
+            verbose=true
+            ;;
+        [?])
+            # Print usage upon unknown
+            echo "Usage: $0 [-a] [-v]"
+            echo "Generate topological sort for C/C++ source file"
+            echo
+            echo "Options"
+            echo "-a,    output all symbols (external, static, typedef)"
+            echo "-v,    verbose output (print intermediate representations)"
+            exit 1
+            ;;
+    esac
+done
+
+# Dynamically take input from STDIN or args
+input=${1--}
+
+# Temporary files
+call_graph=$(mktemp)
+dep_graph=$(mktemp)
+
+# Ensure proper cleanup
+trap 'rm -f "$call_graph" "$dep_graph"; exit' 0 2 3 15
+
+# Create the reverse call graph using cflow first.
+cflow -r $flag <(cat "$input") > "$call_graph" 2> /dev/null
+
+# Print call graph if verbose
+if [ "$verbose" = true ]; then
+    echo "Call graph:"
+    cat $call_graph
+    echo ""
+fi
+
+# Create dependency graph next
+./dep.py "$call_graph" "$dep_graph"
+
+# Print dependency graph if verbose
+if [ "$verbose" = true ]; then
+    echo "Dependency graph:"
+    cat $dep_graph
+    echo ""
+fi
+
+# Topological sort
+if [ "$verbose" = true ]; then
+    echo "Topological sort:"
+fi
+
+tsort < "$dep_graph"
