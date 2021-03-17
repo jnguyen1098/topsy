@@ -2,17 +2,19 @@
 
 # topsy
 
-A simple script that generates a bottom-up study sequence (given a C/C++ source file) that aids in understanding unfamiliar programs. An algorithm known as [topological sorting](https://en.wikipedia.org/wiki/Topological_sorting) is used to create this sequence: topsy is merely an implementation that pipelines it (thanks to `cflow` and `tsort`).
+This is a pipeline script that generates a bottom-up plan of study for a given C/C++ source file. Using tools your Linux system already has (GNU `cflow` and `tsort`), topsy lists a total ordering of a source file's functions/symbols, aiding those studying unfamiliar code. [Dependency graphs](https://en.wikipedia.org/wiki/Dependency_graph) and [topological sorting](https://en.wikipedia.org/wiki/Topological_sorting) is used to derive these sequences.
 
 ## Motivation
 
-Take for example a function `main()` that calls `parse_something()`, and `parse_something()` calls `parse_preprocedure_1()`, `parse_preprocedure_2()` and `parse_preprocedure_3()`. Therefore, in order to understand `main()` from a bottom-up point of view, you'd have to understand `parse_something()`, which involves understanding the three `parse_preprocedure...` functions. In graph theory, this is known as a dependency graph; the example can be visualized as:
+Take for example a program whose `main()` calls `parse_something()`, which itself calls `parse_preprocedure_1()`, `parse_preprocedure_2()` and `parse_preprocedure_3()`. We can visualize the procedural dependencies using a dependency graph, which in this case would be:
 
 <p align="center">
     <img alt="dependency graph" src="https://i.imgur.com/QxVyott.png">
 </p>
 
-This dependency graph is also a "directed acyclic graph" (DAG), which makes it perfect for a topological sort. If our paradigm dictates only understanding a function when you understand all the functions called within, then a sequence to understand `example_1.c` (ergo, a topological sort) could be:
+In order to understand the program in its entirety, someone who learns "top-down" may study `main()` first, then `parse_something()`, and then the three `parse_preprocedure...` functions. This is pretty straightforward as you can just read the functions _ad hoc_ and jump in and out of the functions/`ctags` as you go along, but how about for those who prefer learning bottom-up? Still possible, but a little more work is needed.
+
+We need to use topological sorting in order to interpret the dependency graph (above) as a partial ordering and then create a total ordering that _attempts_ to obey the partial ordering rules above. In laymen terms, a bottom-up study plan would tell you that in order to understand `main()`, you need to understand `parse_something()`, and in order to understand that, you'd need to understand the three `parse_preprocedure...` functions. So, by this logic, we would start off at the `parse_preprocedure...` functions and work out way inside-out. A sequence to understand `example_1.c` (ergo, the resulting topological sort) could be:
 
 - `parse_preprocedure_1()`
 
@@ -24,7 +26,9 @@ This dependency graph is also a "directed acyclic graph" (DAG), which makes it p
 
 - `main()`
 
-Now, it's pretty easy to visualize where to learn when it comes to this simple example, but imagine a 1000+ line source file with many functions (such as the Linux `tr` command, or in this repo, `example_2.c`). The topological sort isn't that obvious anymore, now is it? That's where topsy comes in. It aims to automate this process as much as possible. 
+A basic way to visualize the topological sorting technique used in GNU `tsort` (specifically [Kahn's algorithm](https://en.wikipedia.org/wiki/Topological_sorting#Kahn's_algorithm)) is to continually pop off (or in this case, "learn") nodes that have no dependencies (i.e. no arrows pointing in to them) until the graph is empty. In the case of there being a cycle (as is the case with recursive functions and cyclical function chains), arbitrarily break a tie.
+
+It's pretty easy to intuitively derive where to learn when it comes to this simple example, but imagine a [1000+ line source file with many functions](https://i.imgur.com/vwkSMl4.png). As you can see, the topological sort isn't that obvious anymore. That's where topsy comes in. It aims to automate this process as much as possible using tools your Linux system already has.
 
 ## Usage
 
@@ -49,6 +53,7 @@ Note: `-v` does not imply `-a`. Arguments must come after the filename.
 - Verbose output support, allowing for printing of the intermediate structures:
   - `cflow` call graph
   - `dep.py` dependency graph
+  - GraphViz gv/dot file export for the aforementioned `dep.py` dependency graph
 - Support for outputting all symbols (including `typedef`s, `extern`s, and `static`s)
 
 ## Examples
