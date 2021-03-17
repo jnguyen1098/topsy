@@ -48,7 +48,7 @@ cflow -r $flag <(cat "$input") > "$call_graph" 2> /dev/null
 # Print call graph if verbose
 if [ "$verbose" = true ]; then
     echo "Call graph:"
-    cat $call_graph
+    cat "$call_graph"
     echo ""
 fi
 
@@ -58,7 +58,7 @@ fi
 # Print dependency graph if verbose
 if [ "$verbose" = true ]; then
     echo "Dependency graph:"
-    cat $dep_graph
+    cat "$dep_graph"
     echo ""
 fi
 
