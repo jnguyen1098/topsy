@@ -2,7 +2,7 @@
 
 # topsy
 
-This is a pipeline script that generates a bottom-up plan of study for a given C/C++ source file. Using tools your Linux system already has (GNU `cflow` and `tsort`), topsy lists a total ordering of a source file's functions/symbols, aiding those studying unfamiliar code. [Dependency graphs](https://en.wikipedia.org/wiki/Dependency_graph) and [topological sorting](https://en.wikipedia.org/wiki/Topological_sorting) is used to derive these sequences.
+This is a pipeline script that generates a bottom-up plan of study for a given C/C++ source file. Using tools your Linux system already has (GNU `cflow` and `tsort`), topsy lists a total ordering of a source file's functions/symbols, aiding those studying unfamiliar code. [Dependency graphs](https://en.wikipedia.org/wiki/Dependency_graph) and [topological sorting](https://en.wikipedia.org/wiki/Topological_sorting) are used to derive these sequences.
 
 ## Motivation
 
